@@ -1,10 +1,19 @@
+import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_processing/flutter_processing.dart';
-import 'package:sensors/sensors.dart';
+import 'package:demo/src/utils/provider.dart';
 
-void main() {
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_processing/flutter_processing.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
   runApp(const MyApp());
 }
 
@@ -47,7 +56,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  double balance = 0;
+  var pc = PageController(initialPage: 1);
   // @override
   // void initState() {
   //   super.initState();
@@ -55,11 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // final a = [
-    //   "10,000원 챌린지 D+17",
-    //   "Demo text pairntlasdf",
-    //   "10,000원 챌린지 D+19"
-    // ];
     return SafeArea(
       child: Scaffold(
         body: Padding(
@@ -69,64 +73,99 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           child: Center(
             child: Stack(
-              children: <Widget>[
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PageView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: pc,
+                  onPageChanged: (idx) {},
                   children: [
-                    Container(
-                      width: 256,
-                      height: 256,
-                      decoration: const BoxDecoration(
-                        // color: Color(0xFFE0E0E0),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0xFF555566),
-                            // color: Color(0xFF444455),
-                            // color: Colors.white,
-                            offset: Offset(-4, -4),
-                            blurRadius: 12,
-                            spreadRadius: 4,
-                            blurStyle: BlurStyle.normal
+                    SizedBox.expand(),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 256,
+                          height: 256,
+                          decoration: const BoxDecoration(
+                            // color: Color(0xFFE0E0E0),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0xFF555566),
+                                // color: Colors.white,
+                                offset: Offset(-4, -4),
+                                blurRadius: 12,
+                                spreadRadius: 4,
+                                blurStyle: BlurStyle.normal
+                              ),
+                              BoxShadow(
+                                color: Color(0xFF222233),
+                                // color: Color(0xFFBEBEBE),
+                                offset: Offset(4, 4),
+                                blurRadius: 12,
+                                spreadRadius: 4,
+                                blurStyle: BlurStyle.normal
+                              )
+                            ],
                           ),
-                          BoxShadow(
-                            color: Color(0xFF222233),
-                            // color: Color(0xFFBEBEBE),
-                            offset: Offset(4, 4),
-                            blurRadius: 12,
-                            spreadRadius: 4,
-                            blurStyle: BlurStyle.normal
-                          )
-                        ],
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: SizedBox.expand(
-                        child: VisualBalance(
-                          budget: 100,
-                          balance: balance,
-                        )
+                          clipBehavior: Clip.antiAlias,
+                          child: SizedBox.expand(
+                            child: VisualBalance()
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          '₩100,000',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        NewWidget(),
+                      ],
+                    ),
+                    Center(
+                      child: Container(
+                        width: 400,
+                        height: 200,
+                        color: Colors.white,
+                        transform: Matrix4.rotationZ(pi/2),
+                        transformAlignment: Alignment.center,
+                        child: Center(
+                          child: Text('hello'),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 32),
-                    Slider(
-                      value: balance,
-                      min: 0,
-                      max: 100,
-                      onChanged: (value) {
-                        setState(() {
-                          balance = value;
-                        });
-                      },
-                    ),
-                  ],
+                  ]
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     height: 32,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      // border: Border.all(
+                      //   color: Colors.white
+                      // ),
                     ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(3, (_) => Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: 8,
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )),
+                    )
                   ),
                 ),
               ],
@@ -138,15 +177,32 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class VisualBalance extends StatelessWidget {
-  final double budget;
-  final double balance;
+class NewWidget extends StatefulWidget {
+  const NewWidget({ super.key });
 
-  const VisualBalance({
-    super.key,
-    required this.budget,
-    required this.balance,
-  });
+  @override
+  State<NewWidget> createState() => _NewWidgetState();
+}
+
+class _NewWidgetState extends State<NewWidget> {
+  @override
+  Widget build(BuildContext context) {
+    final provider = StateProvider();
+    return Slider(
+      value: provider.balance.balance,
+      min: 0,
+      max: 100,
+      onChanged: (value) {
+        setState(() {
+          provider.balance.balance = value;
+        });
+      },
+    );
+  }
+}
+
+class VisualBalance extends StatelessWidget {
+  const VisualBalance({ super.key });
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +210,6 @@ class VisualBalance extends StatelessWidget {
       sketch: WaterLevelIndicator(
         containerWidth: 256,
         containerHeight: 256,
-        value: balance / budget
       )
     );
   }
@@ -163,13 +218,14 @@ class VisualBalance extends StatelessWidget {
 class WaterLevelIndicator extends Sketch {
   final int containerWidth;
   final int containerHeight;
-  final double value;
 
+  late double _h;
   late double _theta;
   late PVector _acceleration;
+
   late List<double> xs;
 
-  static const int resolution = 16;
+  static const int resolution = 32;
   static const double step = 0.5;
   static const double scale = 64;
   static const double smooth = 0.03125;
@@ -177,7 +233,6 @@ class WaterLevelIndicator extends Sketch {
   WaterLevelIndicator({
     required this.containerWidth,
     required this.containerHeight,
-    required this.value,
   });
 
   @override
@@ -187,14 +242,15 @@ class WaterLevelIndicator extends Sketch {
     background(color: const Color(0xFF333344));
     // background(color: const Color(0xFFE0E0E0));
 
-    _acceleration = PVector(0, 0);
-    accelerometerEvents.listen((e) {
-      _acceleration.x = e.x;
-      _acceleration.y = e.y;
-    });
+    xs = List.generate(
+      resolution,
+      (i) => width * i / (resolution - 1)
+    );
+    _h = 0;
     _theta = 0;
-    xs = List.generate(resolution, (i) => width * i / (resolution - 1));
+    _acceleration = PVector(0, 0);
 
+    StateProvider().balance.budget = 100;
     noiseSeed(DateTime.now().millisecondsSinceEpoch);
   }
 
@@ -203,13 +259,18 @@ class WaterLevelIndicator extends Sketch {
     background(color: const Color(0xFF333344));
     // background(color: const Color(0xFFE0E0E0));
 
+    final provider = StateProvider();
+    final value = provider.balance.value;
+    final h = map(constrain(value, 0, 1), 0, 1, height, 0);
+
+    _h += (h - _h) * smooth;
+
     final w1 = xs.map((x) {
       final n = noise(
         x: (x + frameCount) * step,
         y: frameCount * step
       );
-      // final y = 128 + n * scale;
-      final y = map(constrain(value, 0, 1), 0, 1, height, 0) + n * scale;
+      final y = _h - n * scale;
 
       return Offset(x, y);
     }).toList();
@@ -218,11 +279,21 @@ class WaterLevelIndicator extends Sketch {
         x: (x + frameCount) * step,
         z: frameCount * step
       );
-      // final y = 128 + n * scale;
-      final y = map(constrain(value, 0, 1), 0, 1, height, 0) + n * scale;
+      final y = _h - n * scale;
 
       return Offset(x, y);
     }).toList();
+    final w3 = xs.map((x) {
+      final n = noise(
+        x: (x + frameCount) * step,
+        y: frameCount * step,
+        z: frameCount * step
+      );
+      final y = _h - n * scale;
+
+      return Offset(x, y);
+    }).toList();
+    final al = (256 * 0.8).round();
     final ofs = Offset(width/2, height/2);
 
     pushMatrix();
@@ -230,31 +301,65 @@ class WaterLevelIndicator extends Sketch {
     translate(x: ofs.dx, y: ofs.dy);
     rotate(_theta);
 
-    fill(color: Colors.lightBlueAccent);
-    stroke(color: Colors.lightBlueAccent);
+    stroke(color: Colors.white);
     strokeWeight(1);
-    for (int i = 0; i < w1.length-1; i++) {
-      quad(
-        w1[i] - ofs,
-        Offset(w1[i].dx, height.toDouble()) - ofs,
-        Offset(w1[i+1].dx, height.toDouble()) - ofs,
-        w1[i+1] - ofs
-      );
-    }
+    line(
+      Offset(0, -height/2 + 8),
+      Offset(0, -height/2 + 16)
+    );
 
-    fill(color: Colors.blue);
-    stroke(color: Colors.blue);
-    strokeWeight(1);
-    for (int i = 0; i < w2.length-1; i++) {
-      quad(
-        w2[i] - ofs,
-        Offset(w2[i].dx, height.toDouble()) - ofs,
-        Offset(w2[i+1].dx, height.toDouble()) - ofs,
-        w2[i+1] - ofs
-      );
-    }
+    pushMatrix();
+
+    rotate(-_theta);
+    translate(x: -ofs.dx, y: -ofs.dy);
+
+    final int amberlevel = constrain(
+      map(abs(_theta - pi / 2), 0, 0.1, 6, 1),
+      1,
+      6
+    ).round() * 100;
+    fill(color: Colors.amber[amberlevel]!);
+    noStroke();
+    circle(center: Offset(width - 12, height/2), diameter: 16);
 
     popMatrix();
+
+    fill(color: Colors.lightBlue.withAlpha(al));
+    stroke(color: Colors.lightBlue.withAlpha(al));
+    strokeWeight(1);
+    beginShape();
+    vertex(0 - ofs.dx, height + 16 - ofs.dy);
+    for (int i = 0; i < w3.length; i++) {
+      vertex(w3[i].dx - ofs.dx, w3[i].dy - ofs.dy);
+    }
+    vertex(width - ofs.dx, height + 16 - ofs.dy);
+    endShape(close: true);
+
+    fill(color: Colors.lightBlueAccent.withAlpha(al));
+    stroke(color: Colors.lightBlueAccent.withAlpha(al));
+    strokeWeight(1);
+    beginShape();
+    vertex(0 - ofs.dx, height + 16 - ofs.dy);
+    for (int i = 0; i < w1.length; i++) {
+      vertex(w1[i].dx - ofs.dx, w1[i].dy - ofs.dy);
+    }
+    vertex(width - ofs.dx, height + 16 - ofs.dy);
+    endShape(close: true);
+
+    fill(color: Colors.blue.withAlpha(al));
+    stroke(color: Colors.blue.withAlpha(al));
+    strokeWeight(1);
+    beginShape();
+    vertex(0 - ofs.dx, height + 16 - ofs.dy);
+    for (int i = 0; i < w2.length; i++) {
+      vertex(w2[i].dx - ofs.dx, w2[i].dy - ofs.dy);
+    }
+    vertex(width - ofs.dx, height + 16 - ofs.dy);
+    endShape(close: true);
+
+    popMatrix();
+
+    _acceleration = PVector(provider.sensors.ax, provider.sensors.ay);
 
     final origin = PVector(0, 1);
     final normalized = _acceleration / _acceleration.mag;
