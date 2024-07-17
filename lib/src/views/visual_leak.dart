@@ -129,6 +129,9 @@ class LeakIndicator extends Sketch {
           const Duration(milliseconds: 500),
           () {
             provider.cfpc.page = 1;
+            if (provider.handler != null) {
+              provider.handler!();
+            }
           }
         );
       }
