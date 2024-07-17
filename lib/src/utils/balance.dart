@@ -6,7 +6,7 @@ class BalanceService {
 
   BalanceService._new() {
     budget = 0.0;
-    balance = 0.0;
+    balance = 40.0;
   }
 
   factory BalanceService() => _instance;

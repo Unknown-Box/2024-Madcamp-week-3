@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 
-import 'package:demo/src/utils/provider.dart';
+import 'package:Aggija/src/utils/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_processing/flutter_processing.dart';
 

@@ -1,9 +1,9 @@
-import 'package:demo/src/common/crossfade_pageview.dart';
-import 'package:demo/src/utils/provider.dart';
-import 'package:demo/src/views/radarpie.dart';
-import 'package:demo/src/views/visual_balance.dart';
-import 'package:demo/src/views/visual_leak.dart';
-import 'package:demo/src/views/wordcloud.dart';
+import 'package:Aggija/src/common/crossfade_pageview.dart';
+import 'package:Aggija/src/utils/provider.dart';
+import 'package:Aggija/src/views/radarpie.dart';
+import 'package:Aggija/src/views/visual_balance.dart';
+import 'package:Aggija/src/views/visual_leak.dart';
+import 'package:Aggija/src/views/wordcloud.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

@@ -1,6 +1,6 @@
-import 'package:demo/src/common/crossfade_pageview.dart';
-import 'package:demo/src/utils/balance.dart';
-import 'package:demo/src/utils/sensors.dart';
+import 'package:Aggija/src/common/crossfade_pageview.dart';
+import 'package:Aggija/src/utils/balance.dart';
+import 'package:Aggija/src/utils/sensors.dart';
 import 'package:flutter/material.dart';
 
 class StateProvider {
