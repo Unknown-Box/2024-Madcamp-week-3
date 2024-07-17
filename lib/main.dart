@@ -1,6 +1,9 @@
+import 'package:demo/src/common/crossfade_pageview.dart';
 import 'package:demo/src/utils/provider.dart';
+import 'package:demo/src/views/radarpie.dart';
 import 'package:demo/src/views/visual_balance.dart';
 import 'package:demo/src/views/visual_leak.dart';
+import 'package:demo/src/views/wordcloud.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,71 +66,145 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: 8,
-            horizontal: 24
+            horizontal: 0
           ),
           child: Stack(
             children: [
-              Center(
-                child: Container(
-                  width: 256,
-                  height: 256,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xFF555566),
-                        // color: Colors.white,
-                        offset: Offset(-4, -4),
-                        blurRadius: 12,
-                        spreadRadius: 4,
-                        blurStyle: BlurStyle.normal
-                      ),
-                      BoxShadow(
-                        color: Color(0xFF222233),
-                        // color: Color(0xFFBEBEBE),
-                        offset: Offset(4, 4),
-                        blurRadius: 12,
-                        spreadRadius: 4,
-                        blurStyle: BlurStyle.normal
-                      )
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: PageView(
-                    // physics: const NeverScrollableScrollPhysics(),
-                    controller: provider.pc,
-                    children: [
-                      const VisualBalance(),
-                      const VisualLeak(),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            await provider.pc.previousPage(
-                              duration: const Duration(seconds: 1),
-                              curve: Curves.easeInOut
-                            );
-                            await provider.pc.previousPage(
-                              duration: const Duration(seconds: 1),
-                              curve: Curves.easeInOut
-                            );
-                          },
-                          child: const Text('prev'),
-                        ),
-                      )
-                    ],
-                  )
-                ),
-              ),
-              const Column(
-                verticalDirection: VerticalDirection.up,
+              CrossfadePageview(
+                controller: provider.cfpc,
                 children: [
-                  NewWidget()
+                  Center(
+                    child: Container(
+                      width: 256,
+                      height: 256,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xFF555566),
+                            // color: Colors.white,
+                            offset: Offset(-4, -4),
+                            blurRadius: 12,
+                            spreadRadius: 4,
+                            blurStyle: BlurStyle.normal
+                          ),
+                          BoxShadow(
+                            color: Color(0xFF222233),
+                            // color: Color(0xFFBEBEBE),
+                            offset: Offset(4, 4),
+                            blurRadius: 12,
+                            spreadRadius: 4,
+                            blurStyle: BlurStyle.normal
+                          )
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: PageView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        controller: provider.pc,
+                        children: const [
+                          VisualBalance(),
+                          VisualLeak(),
+                          // Center(
+                          //   child: ElevatedButton(
+                          //     onPressed: () async {
+                          //       await provider.pc.previousPage(
+                          //         duration: const Duration(seconds: 1),
+                          //         curve: Curves.easeInOut
+                          //       );
+                          //       await provider.pc.previousPage(
+                          //         duration: const Duration(seconds: 1),
+                          //         curve: Curves.easeInOut
+                          //       );
+                          //     },
+                          //     child: const Text('prev'),
+                          //   ),
+                          // ),
+                        ],
+                      )
+                    ),
+                  ),
+                  const ExpenditureRadarChart(),
+                  const ExpenditureWordCloud(),
                 ]
               ),
+              NewWidget2(provider: provider),
+              // Column(
+              //   verticalDirection: VerticalDirection.up,
+              //   children: [
+              //     const SizedBox(height: 64),
+              //     const NewWidget(),
+              //     Row(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: [
+              //         ElevatedButton(
+              //           onPressed: () {
+              //             provider.cfpc.page--;
+              //           },
+              //           child: const Text('prev')
+              //         ),
+              //         ElevatedButton(
+              //           onPressed: () {
+              //             provider.cfpc.page++;
+              //           },
+              //           child: const Text('next')
+              //         ),
+              //       ],
+              //     )
+              //   ]
+              // ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class NewWidget2 extends StatefulWidget {
+  const NewWidget2({
+    super.key,
+    required this.provider,
+  });
+
+  final StateProvider provider;
+
+  @override
+  State<NewWidget2> createState() => _NewWidget2State();
+}
+
+class _NewWidget2State extends State<NewWidget2> {
+  bool flag = false;
+
+  @override
+  Widget build(BuildContext context) {
+    void f() {
+      setState(() {
+        flag = !flag;
+      });
+    }
+    widget.provider.handler = f;
+    return Align(
+      alignment: Alignment.topLeft,
+      child: (widget.provider.pc.page ?? 0.0) < 0.1
+      ? const SizedBox.shrink()
+      : IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () async {
+            if (widget.provider.cfpc.page == 0) {
+              if (widget.provider.pc.page == 1.0) {
+                await widget.provider.pc.previousPage(
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.ease
+                );
+              }
+            } else if (widget.provider.cfpc.page == 1) {
+              widget.provider.cfpc.page = 0;
+            } else {}
+            f();
+          },
+          color: Colors.white,
+        ),
     );
   }
 }

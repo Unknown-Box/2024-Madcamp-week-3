@@ -11,5 +11,5 @@ class BalanceService {
 
   factory BalanceService() => _instance;
 
-  double get value => budget == 1.0 ? 0.0 : balance / budget;
+  double get value => (balance / budget).isFinite ? balance / budget : 0.0;
 }

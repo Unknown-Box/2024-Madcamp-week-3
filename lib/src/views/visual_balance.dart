@@ -95,6 +95,9 @@ class WaterLevelIndicator extends Sketch {
           );
           timer = 0;
           provider.balance.balance = 30;
+          if (provider.handler != null) {
+            provider.handler!();
+          }
         }
       );
 

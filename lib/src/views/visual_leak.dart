@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:async';
 
+import 'package:demo/src/utils/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_processing/flutter_processing.dart';
 
@@ -10,6 +11,8 @@ class VisualLeak extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Processing(sketch: LeakIndicator(
+      deviceWidth: MediaQuery.of(context).size.width,
+      deviceHeight: MediaQuery.of(context).size.height,
       containerWidth: 256,
       containerHeight: 256,
     ));
@@ -17,15 +20,23 @@ class VisualLeak extends StatelessWidget {
 }
 
 class LeakIndicator extends Sketch {
+  final double deviceWidth;
+  final double deviceHeight;
   final int containerWidth;
   final int containerHeight;
 
+  late int timer;
+  late StateProvider provider;
+
   late final PImage bgimg1;
   late final PImage bgimg2;
+  late final PVector leakPoint;
   late final List<PImage> icons;
   late final List<WaterDrop> drops;
 
   LeakIndicator({
+    required this.deviceWidth,
+    required this.deviceHeight,
     required this.containerWidth,
     required this.containerHeight,
   });
@@ -36,8 +47,13 @@ class LeakIndicator extends Sketch {
     size(width: containerWidth, height: containerHeight);
     background(color: const Color(0xFF333344));
 
+    timer = 0;
+    provider = StateProvider();
+
     bgimg1 = await loadImage('assets/b1b.png');
     bgimg2 = await loadImage('assets/b2.png');
+
+    leakPoint = PVector(104, 88);
 
     const iconPathes = [
       "assets/categories/clothes-b.png",
@@ -62,8 +78,8 @@ class LeakIndicator extends Sketch {
     background(color: const Color(0xFF333344));
 
     if (frameCount % 10 == 0) {
-      final px = 104 + randomGaussian(mean: 1);
-      final py = 88.0;
+      final px = leakPoint.x + randomGaussian(mean: 1);
+      final py = leakPoint.y.toDouble();
 
       drops.add(WaterDrop(px, py, this));
     }
@@ -85,26 +101,44 @@ class LeakIndicator extends Sketch {
       e.commit();
     }
 
-    // final clusters = WaterCluster.fromWaterDrops(
-    //   drops: drops,
-    //   sketch: this
-    // );
-
     await image(image: bgimg1);
-
-    // circle(
-    //   center: Offset(114, 88),
-    //   diameter: 16,
-    // );
-
-    // for (final e in drops) {
-    //   e.draw(icons);
-    // }
 
     await drops.map((e) => e.draw(icons)).wait;
 
+    if (isMousePressed) {
+      final mx = mouseX.toDouble() + (containerWidth - deviceWidth) / 2;
+      final my = mouseY.toDouble() + (containerHeight - deviceHeight) / 2 - 72;
+      final mouse = PVector(mx, my);
+      fill(color: const Color(0xFFE0E0E0));
+      noStroke();
+      circle(
+        center: mouse.toOffset(),
+        diameter: 16
+      );
+
+      if (leakPoint.dist(mouse) < 16) {
+        timer++;
+      } else {
+        timer = 0;
+      }
+
+      if (timer > 90) {
+        timer = 0;
+        mouse.mult(0);
+        Timer(
+          const Duration(milliseconds: 500),
+          () {
+            provider.cfpc.page = 1;
+          }
+        );
+      }
+    }
+
     await image(image: bgimg2);
   }
+
+  @override
+  void mousePressed() {}
 }
 
 class WaterDrop {
@@ -184,81 +218,3 @@ class WaterDrop {
     return p.x < 0 || p.x >= width || p.y < 0 || p.y >= height;
   }
 }
-
-// class WaterCluster {
-//   final List<WaterDrop> drops;
-//   final Sketch sketchService;
-
-//   const WaterCluster({
-//     required this.drops,
-//     required this.sketchService,
-//   });
-
-//   void draw() {
-//     sketchService.fill(color: Colors.lightBlue);
-//     sketchService.stroke(color: Colors.black);
-//     sketchService.noStroke();
-
-//     // final size = drops.length;
-//     // sketchService.circle(
-//     //   center: drops.last.p.toOffset(),
-//     //   diameter: 4 * sqrt(size)
-//     // );
-
-//     for (final e in drops) {
-//       sketchService.circle(
-//         center: e.p.toOffset(),
-//         diameter: 4,
-//       );
-//     }
-//   }
-
-//   static List<WaterCluster> fromWaterDrops({
-//     required List<WaterDrop> drops,
-//     required Sketch sketch
-//   }) {
-//     final cids = List.generate(drops.length, (i) => i);
-
-//     int getRoot(int i) {
-//       if (i == cids[i]) {
-//         return i;
-//       } else {
-//         return cids[i] = getRoot(cids[i]);
-//       }
-//     }
-
-//     for (int i = 0; i < drops.length; i++) {
-//       for (int j = i+1; j < drops.length; j++) {
-//         if (drops[i].p.dist(drops[j].p) < 4) {
-//           final rootI = getRoot(i);
-//           final rootJ = getRoot(j);
-
-//           if (rootI < rootJ) {
-//             cids[rootJ] = rootI;
-//           } else {
-//             cids[rootI] = rootJ;
-//           }
-//         }
-//       }
-//     }
-
-//     return List
-//       .generate(drops.length, (i) => i)
-//       .fold<Map<int, List<int>>>({}, (clusters, int i) {
-//         final cid = cids[i];
-//         if (clusters.containsKey(cid)) {
-//           clusters[cid]!.add(i);
-//         } else {
-//           clusters[cid] = [i];
-//         }
-
-//         return clusters;
-//       })
-//       .values
-//       .map((e) => WaterCluster(
-//         drops: e.map((i) => drops[i]).toList(),
-//         sketchService: sketch,
-//       ))
-//       .toList();
-//   }
-// }

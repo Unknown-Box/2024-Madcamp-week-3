@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_echarts/flutter_echarts.dart';
 import 'package:csv/csv.dart';
@@ -5,26 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:custom_sliding_segmented_control/custom_sliding_segmented_control.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ExpenditureRadarChart(),
-    );
-  }
-}
-
 class ExpenditureRadarChart extends StatefulWidget {
   const ExpenditureRadarChart({super.key});
 
   @override
-  _ExpenditureRadarChartState createState() => _ExpenditureRadarChartState();
+  State<ExpenditureRadarChart> createState() => _ExpenditureRadarChartState();
 }
 
 class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
@@ -39,6 +26,13 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
   void initState() {
     super.initState();
     loadCSV();
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   Future<void> loadCSV() async {
@@ -102,9 +96,9 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
       return '{ name: "$category", max: ${maxValues[index]}}';
     }).toList();
 
-    Color startColor = Color(0xFF40C4FF); // Blue
-    Color endColor = Color(0xFF4CAF50); // Green
-    Color middleColor = Color(0xFF40C4FF); // Blue for the end
+    Color startColor = const Color(0xFF40C4FF); // Blue
+    Color endColor = const Color(0xFF4CAF50); // Green
+    Color middleColor = const Color(0xFF40C4FF); // Blue for the end
 
     // Calculate the current month index (0-based)
     int monthIndex = int.parse(month.substring(5)) - 1;
@@ -127,7 +121,7 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
 
     return '''
     {
-      backgroundColor: '#2D2D2D',
+      backgroundColor: '#333344',
       graphic: {
         elements: [
           {
@@ -199,14 +193,15 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
         },
         splitArea: {
           areaStyle: {
-            color: ['#3A3A3C']
+            color: ['#444455']
           }
         },
         axisLine: {
           lineStyle: {
             color: 'rgba(255, 255, 255, 0.5)'
           }
-        }
+        },
+        center: ["50%", "50%"]
       },
       series: [{
         name: '월간 지출액',
@@ -239,7 +234,7 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
 
     return '''
     {
-      backgroundColor: '#2D2D2D',
+      backgroundColor: '#333344',
       graphic: {
         elements: [
           {
@@ -296,7 +291,7 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
         }
       },
       legend: {
-        top: '85%',
+        top: '16%',
         left: 'center',
         textStyle: {
           color: '#FFE0E0E0'
@@ -333,82 +328,90 @@ class _ExpenditureRadarChartState extends State<ExpenditureRadarChart> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF2D2D2D),
-      body: data.isEmpty
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          Expanded(
-            child: months.isEmpty
-                ? const Center(child: Text('No data available', style: TextStyle(color: Colors.white)))
-                : Echarts(
-              option: _currentChartType == 'radar' ? getRadarChartOption(months[_currentMonthIndex]) : getPieChartOption(months[_currentMonthIndex]),
-            ),
-          ),
-          if (months.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Slider(
-                    value: _currentMonthIndex.toDouble(),
-                    min: 0,
-                    max: 11,
-                    divisions: 11,
-                    label: (months[_currentMonthIndex]).substring(5), // Display only the month part
-                    onChanged: (value) {
-                      setState(() {
-                        _currentMonthIndex = value.toInt();
-                      });
-                    },
-                    activeColor: Colors.lightBlueAccent,
-                    inactiveColor: const Color(0xFF3A3A3C),
+    return data.isEmpty
+      ? const Center(child: CircularProgressIndicator())
+      : Center(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  child: months.isEmpty
+                      ? const Center(child: Text('No data available', style: TextStyle(color: Colors.white)))
+                      : Echarts(
+                    option: _currentChartType == 'radar' ? getRadarChartOption(months[_currentMonthIndex]) : getPieChartOption(months[_currentMonthIndex]),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: 150,
-                    child: CustomSlidingSegmentedControl<String>(
-                      children: const {
-                        'radar': Text('Radar'),
-                        'pie': Text('Pie'),
-                      },
-                      padding: 10,
-                      isStretch: true,
-                      customSegmentSettings: CustomSegmentSettings(),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 67, 67, 69),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      thumbDecoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 64, 196, 255),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.3),
-                            blurRadius: 4.0,
-                            spreadRadius: 1.0,
-                            offset: const Offset(
-                              0.0,
-                              2.0,
+                ),
+              ],
+            ),
+            Column(
+              verticalDirection: VerticalDirection.up,
+              children: [
+                if (months.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Slider(
+                          value: _currentMonthIndex.toDouble(),
+                          min: 0,
+                          max: 11,
+                          divisions: 11,
+                          label: (months[_currentMonthIndex]).substring(5), // Display only the month part
+                          onChanged: (value) {
+                            setState(() {
+                              _currentMonthIndex = value.toInt();
+                            });
+                          },
+                          activeColor: Colors.lightBlueAccent,
+                          inactiveColor: const Color(0xFF3A3A3C),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: 150,
+                          child: CustomSlidingSegmentedControl<String>(
+                            children: const {
+                              'radar': Text('Radar'),
+                              'pie': Text('Pie'),
+                            },
+                            padding: 10,
+                            isStretch: true,
+                            customSegmentSettings: CustomSegmentSettings(),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 67, 67, 69),
+                              borderRadius: BorderRadius.circular(20),
                             ),
+                            thumbDecoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 64, 196, 255),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(.3),
+                                  blurRadius: 4.0,
+                                  spreadRadius: 1.0,
+                                  offset: const Offset(
+                                    0.0,
+                                    2.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInToLinear,
+                            onValueChanged: (value) {
+                              setState(() {
+                                _currentChartType = value;
+                              });
+                            },
                           ),
-                        ],
-                      ),
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInToLinear,
-                      onValueChanged: (value) {
-                        setState(() {
-                          _currentChartType = value;
-                        });
-                      },
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
-        ],
-      ),
-    );
+          ]
+        ),
+      );
   }
 }
