@@ -11,10 +11,10 @@ class VisualBalance extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Processing(
-      sketch: WaterLevelIndicator(
-        containerWidth: 256,
-        containerHeight: 256,
-      )
+        sketch: WaterLevelIndicator(
+          containerWidth: 256,
+          containerHeight: 256,
+        )
     );
   }
 }
@@ -51,8 +51,8 @@ class WaterLevelIndicator extends Sketch {
     _theta = 0;
     _a = PVector(0, 0);
     xs = List.generate(
-      resolution,
-      (i) => width * i / (resolution - 1)
+        resolution,
+            (i) => width * i / (resolution - 1)
     );
 
     StateProvider().balance.budget = 100;
@@ -78,27 +78,27 @@ class WaterLevelIndicator extends Sketch {
       _theta += (theta - _theta) * smooth;
     }
     final int amberlevel = constrain(
-      map(abs(_theta - thetaStart), 0, 0.1, 7, 1),
-      1,
-      6
+        map(abs(_theta - thetaStart), 0, 0.1, 7, 1),
+        1,
+        6
     ).round() * 100;
 
     timer = amberlevel >= 400 ? timer + 1 : 0;
     if (timer >= 180) {
       provider.balance.balance = provider.balance.budget;
       Timer(
-        const Duration(milliseconds: 1000),
-        () async {
-          await provider.pc.nextPage(
-            duration: const Duration(seconds: 1),
-            curve: Curves.ease
-          );
-          timer = 0;
-          provider.balance.balance = 30;
-          if (provider.handler != null) {
-            provider.handler!();
+          const Duration(milliseconds: 1000),
+              () async {
+            await provider.pc.nextPage(
+                duration: const Duration(seconds: 1),
+                curve: Curves.ease
+            );
+            timer = 0;
+            provider.balance.balance = 30;
+            if (provider.handler != null) {
+              provider.handler!();
+            }
           }
-        }
       );
 
       timer = 0;
@@ -106,8 +106,8 @@ class WaterLevelIndicator extends Sketch {
 
     final w1 = xs.map((x) {
       final n = noise(
-        x: (x + frameCount) * step,
-        y: frameCount * step
+          x: (x + frameCount) * step,
+          y: frameCount * step
       );
       final y = _h - n * scale;
 
@@ -115,8 +115,8 @@ class WaterLevelIndicator extends Sketch {
     }).toList();
     final w2 = xs.map((x) {
       final n = noise(
-        x: (x + frameCount) * step,
-        z: frameCount * step
+          x: (x + frameCount) * step,
+          z: frameCount * step
       );
       final y = _h - n * scale;
 
@@ -124,9 +124,9 @@ class WaterLevelIndicator extends Sketch {
     }).toList();
     final w3 = xs.map((x) {
       final n = noise(
-        x: (x + frameCount) * step,
-        y: frameCount * step,
-        z: frameCount * step
+          x: (x + frameCount) * step,
+          y: frameCount * step,
+          z: frameCount * step
       );
       final y = _h - n * scale;
 
@@ -144,8 +144,8 @@ class WaterLevelIndicator extends Sketch {
     stroke(color: Colors.white);
     strokeWeight(2);
     line(
-      Offset(0, -height/2 + 8),
-      Offset(0, -height/2 + 16)
+        Offset(0, -height/2 + 8),
+        Offset(0, -height/2 + 16)
     );
 
     pushMatrix();

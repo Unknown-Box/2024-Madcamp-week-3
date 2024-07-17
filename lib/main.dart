@@ -23,10 +23,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         // colorScheme: const ColorScheme.light(),
+        fontFamily: 'KoPubDotum',
         useMaterial3: true,
         iconTheme: const IconThemeData(
           color: Color(0xFF444466)
