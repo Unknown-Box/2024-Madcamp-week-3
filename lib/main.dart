@@ -41,9 +41,6 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xFF333344),
         // scaffoldBackgroundColor: const Color(0xFFE0E0E0),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFFE0E0E0)
-        ),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -189,25 +186,43 @@ class _NewWidget2State extends State<NewWidget2> {
     widget.provider.handler = f;
     return Align(
       alignment: Alignment.topLeft,
-      child: (widget.provider.pc.page ?? 0.0) < 0.1
-      ? const SizedBox.shrink()
-      : IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () async {
-            if (widget.provider.cfpc.page == 0) {
-              if (widget.provider.pc.page == 1.0) {
-                await widget.provider.pc.previousPage(
-                  duration: const Duration(seconds: 1),
-                  curve: Curves.ease
-                );
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          (widget.provider.pc.page ?? 0.0) > 0.1
+          ? IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () async {
+              if (widget.provider.cfpc.page == 0) {
+                if (widget.provider.pc.page == 1.0) {
+                  await widget.provider.pc.previousPage(
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.ease
+                  );
+                }
+              } else if (widget.provider.cfpc.page == 1) {
+                widget.provider.cfpc.page = 0;
+              } else {
+                widget.provider.cfpc.page = 1;
               }
-            } else if (widget.provider.cfpc.page == 1) {
-              widget.provider.cfpc.page = 0;
-            } else {}
-            f();
-          },
-          color: Colors.white,
-        ),
+              f();
+            },
+            color: const Color(0xFFE0E0E0),
+          )
+          : const SizedBox.shrink(),
+          (widget.provider.pc.page ?? 0.0) > 0.1
+          && (widget.provider.cfpc.page == 1)
+          ? IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () async {
+              widget.provider.cfpc.page = 2;
+              f();
+            },
+            color: const Color(0xFFE0E0E0),
+          )
+          : const SizedBox.shrink(),
+        ],
+      )
     );
   }
 }
